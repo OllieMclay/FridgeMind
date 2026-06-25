@@ -1,0 +1,405 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);font-size:14px;color:var(--text-primary)}
+.app{max-width:480px;margin:0 auto;padding:1rem}
+.header{display:flex;align-items:center;gap:10px;margin-bottom:1.5rem}
+.logo{width:36px;height:36px;border-radius:10px;background:#2E7D52;display:flex;align-items:center;justify-content:center;color:white;font-size:18px;flex-shrink:0}
+.header h1{font-size:18px;font-weight:500}
+.header p{font-size:12px;color:var(--text-muted)}
+.screen{display:none}
+.screen.active{display:block}
+
+.upload-zone{border:1.5px dashed var(--border-strong);border-radius:12px;padding:2rem 1rem;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;margin-bottom:1rem}
+.upload-zone:hover{border-color:#2E7D52;background:var(--surface-1)}
+.upload-zone.dragover{border-color:#2E7D52;background:#f0faf5}
+.upload-icon{font-size:2.5rem;margin-bottom:.75rem}
+.upload-zone h3{font-size:15px;font-weight:500;margin-bottom:4px}
+.upload-zone p{font-size:12px;color:var(--text-muted)}
+.upload-zone input{display:none}
+
+.preview-img{width:100%;border-radius:10px;border:0.5px solid var(--border);margin-bottom:1rem;max-height:220px;object-fit:cover}
+
+.btn-primary{width:100%;padding:11px;background:#2E7D52;color:white;border:none;border-radius:var(--radius);font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .15s}
+.btn-primary:hover{opacity:.9}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-secondary{width:100%;padding:10px;background:var(--surface-1);color:var(--text-primary);border:0.5px solid var(--border-strong);border-radius:var(--radius);font-size:13px;cursor:pointer;margin-top:8px;transition:background .15s}
+.btn-secondary:hover{background:var(--surface-0)}
+
+.loading-state{text-align:center;padding:2rem 0}
+.spinner{width:32px;height:32px;border:2.5px solid var(--border-strong);border-top-color:#2E7D52;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 1rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-state p{color:var(--text-muted);font-size:13px}
+.loading-state h3{font-size:15px;font-weight:500;margin-bottom:6px}
+
+.section-label{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;margin-top:1.25rem}
+.section-label:first-child{margin-top:0}
+
+.ingredient-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--border)}
+.ingredient-row:last-child{border-bottom:none}
+.ing-emoji{width:28px;text-align:center;font-size:18px;flex-shrink:0}
+.ing-name{flex:1;font-size:13px;font-weight:500}
+.ing-days{font-size:11px;margin-top:1px}
+.days-urgent{color:#C0392B}
+.days-ok{color:#B08020}
+.days-good{color:#2E7D52}
+.ing-toggle{width:20px;height:20px;border-radius:50%;border:0.5px solid var(--border-strong);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;background:var(--surface-2);transition:all .15s}
+.ing-toggle.on{background:#2E7D52;border-color:#2E7D52;color:white}
+
+.recipe-card{background:var(--surface-2);border:0.5px solid var(--border);border-radius:12px;margin-bottom:10px;overflow:hidden}
+.recipe-header{padding:12px 14px 10px;cursor:pointer}
+.recipe-name{font-size:14px;font-weight:500;margin-bottom:5px}
+.recipe-pills{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px}
+.pill{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500}
+.pill-time{background:#E8F5E9;color:#1B5E20}
+.pill-uses{background:#E3F2FD;color:#0D47A1}
+.pill-urgent{background:#FFF3E0;color:#E65100}
+.pill-extra{background:var(--bg-warning);color:var(--text-warning)}
+.recipe-reason{font-size:11px;color:var(--text-muted)}
+.recipe-body{border-top:0.5px solid var(--border);padding:12px 14px;display:none}
+.recipe-body.open{display:block}
+.recipe-body h4{font-size:12px;font-weight:500;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.recipe-body ul{list-style:none;margin-bottom:12px}
+.recipe-body ul li{font-size:13px;padding:3px 0;color:var(--text-secondary);display:flex;align-items:flex-start;gap:6px}
+.recipe-body ul li::before{content:"·";color:var(--text-muted);flex-shrink:0}
+.recipe-body ol{list-style:none;counter-reset:steps;margin-bottom:0}
+.recipe-body ol li{font-size:13px;padding:4px 0;padding-left:22px;position:relative;color:var(--text-secondary);border-bottom:0.5px solid var(--border);counter-increment:steps}
+.recipe-body ol li::before{content:counter(steps);position:absolute;left:0;top:4px;font-size:11px;font-weight:500;color:#2E7D52;width:16px;text-align:right}
+.recipe-body ol li:last-child{border-bottom:none}
+
+.waste-banner{background:#FFF8E1;border:0.5px solid #FFE082;border-radius:10px;padding:10px 12px;margin-bottom:1rem;display:flex;gap:10px;align-items:flex-start}
+.waste-banner-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+.waste-banner-text{font-size:12px;color:#7B5800;line-height:1.5}
+
+.back-btn{background:none;border:none;color:#2E7D52;font-size:13px;cursor:pointer;padding:0;margin-bottom:1rem;display:flex;align-items:center;gap:4px}
+
+.prefs-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1rem}
+.pref-chip{padding:5px 12px;border-radius:20px;border:0.5px solid var(--border-strong);font-size:12px;cursor:pointer;background:var(--surface-2);color:var(--text-secondary);transition:all .15s}
+.pref-chip.active{background:#2E7D52;border-color:#2E7D52;color:white}
+
+.error-box{background:var(--bg-danger);border:0.5px solid var(--border-danger);border-radius:var(--radius);padding:10px 12px;font-size:13px;color:var(--text-danger);margin-bottom:1rem}
+</style>
+
+<h2 class="sr-only">FridgeMind — upload a fridge photo to get AI-powered recipe suggestions</h2>
+
+<div class="app">
+  <div class="header">
+    <div class="logo">🥦</div>
+    <div>
+      <h1>FridgeMind</h1>
+      <p>What can I make today?</p>
+    </div>
+  </div>
+
+  <div id="screen-upload" class="screen active">
+    <div class="section-label">Dietary preferences</div>
+    <div class="prefs-row" id="prefs-row">
+      <div class="pref-chip" data-pref="vegetarian">Vegetarian</div>
+      <div class="pref-chip" data-pref="vegan">Vegan</div>
+      <div class="pref-chip" data-pref="gluten-free">Gluten-free</div>
+      <div class="pref-chip" data-pref="dairy-free">Dairy-free</div>
+      <div class="pref-chip" data-pref="quick">Under 20 mins</div>
+    </div>
+
+    <div class="section-label" style="margin-top:1rem">Your fridge or pantry</div>
+    <div class="upload-zone" id="upload-zone">
+      <input type="file" id="file-input" accept="image/*">
+      <div class="upload-icon">📷</div>
+      <h3>Upload a photo</h3>
+      <p>Snap your fridge, freezer, or pantry shelf</p>
+    </div>
+
+    <img id="preview-img" class="preview-img" style="display:none">
+    <div id="upload-error" class="error-box" style="display:none"></div>
+
+    <button class="btn-primary" id="scan-btn" disabled>
+      <i class="ti ti-sparkles" aria-hidden="true" style="font-size:16px"></i>
+      Scan and find recipes
+    </button>
+    <button class="btn-secondary" id="demo-btn">Try with a sample image</button>
+  </div>
+
+  <div id="screen-loading" class="screen">
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <h3 id="loading-title">Scanning your fridge…</h3>
+      <p id="loading-sub">Identifying ingredients with AI</p>
+    </div>
+  </div>
+
+  <div id="screen-ingredients" class="screen">
+    <button class="back-btn" id="back-to-upload">
+      <i class="ti ti-arrow-left" aria-hidden="true" style="font-size:14px"></i> Scan again
+    </button>
+    <div id="ingredient-sections"></div>
+    <button class="btn-primary" id="get-recipes-btn" style="margin-top:1rem">
+      <i class="ti ti-chef-hat" aria-hidden="true" style="font-size:16px"></i>
+      Find recipes with these
+    </button>
+  </div>
+
+  <div id="screen-recipes" class="screen">
+    <button class="back-btn" id="back-to-ingredients">
+      <i class="ti ti-arrow-left" aria-hidden="true" style="font-size:14px"></i> Edit ingredients
+    </button>
+    <div id="waste-alert" class="waste-banner" style="display:none">
+      <div class="waste-banner-icon">⏱️</div>
+      <div class="waste-banner-text" id="waste-alert-text"></div>
+    </div>
+    <div class="section-label">Recipes ranked by what needs using first</div>
+    <div id="recipe-list"></div>
+    <button class="btn-secondary" id="rescan-btn" style="margin-top:.5rem">Scan a different photo</button>
+  </div>
+</div>
+
+<script>
+const API = 'https://api.anthropic.com/v1/messages';
+let imageBase64 = null;
+let imageMediaType = null;
+let ingredients = [];
+let activePrefs = new Set();
+
+const $ = id => document.getElementById(id);
+const show = id => { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); $(id).classList.add('active'); };
+
+$('prefs-row').addEventListener('click', e => {
+  const chip = e.target.closest('.pref-chip');
+  if (!chip) return;
+  chip.classList.toggle('active');
+  const p = chip.dataset.pref;
+  activePrefs.has(p) ? activePrefs.delete(p) : activePrefs.add(p);
+});
+
+const uploadZone = $('upload-zone');
+const fileInput = $('file-input');
+
+uploadZone.addEventListener('click', () => fileInput.click());
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+uploadZone.addEventListener('drop', e => { e.preventDefault(); uploadZone.classList.remove('dragover'); handleFile(e.dataTransfer.files[0]); });
+fileInput.addEventListener('change', () => handleFile(fileInput.files[0]));
+
+function handleFile(file) {
+  if (!file || !file.type.startsWith('image/')) return;
+  imageMediaType = file.type;
+  const reader = new FileReader();
+  reader.onload = e => {
+    imageBase64 = e.target.result.split(',')[1];
+    $('preview-img').src = e.target.result;
+    $('preview-img').style.display = 'block';
+    $('scan-btn').disabled = false;
+    $('upload-error').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+$('demo-btn').addEventListener('click', async () => {
+  $('demo-btn').disabled = true;
+  $('demo-btn').textContent = 'Loading sample…';
+  const sampleUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Good_Food_Display_-_NCI_Visuals_Online.jpg/1200px-Good_Food_Display_-_NCI_Visuals_Online.jpg';
+  try {
+    const res = await fetch(sampleUrl);
+    const blob = await res.blob();
+    imageMediaType = 'image/jpeg';
+    const reader = new FileReader();
+    reader.onload = e => {
+      imageBase64 = e.target.result.split(',')[1];
+      $('preview-img').src = e.target.result;
+      $('preview-img').style.display = 'block';
+      $('scan-btn').disabled = false;
+    };
+    reader.readAsDataURL(blob);
+  } catch {
+    $('upload-error').textContent = "Couldn't load sample image. Upload your own instead.";
+    $('upload-error').style.display = 'block';
+  }
+  $('demo-btn').disabled = false;
+  $('demo-btn').textContent = 'Try with a sample image';
+});
+
+$('scan-btn').addEventListener('click', () => runScan());
+$('get-recipes-btn').addEventListener('click', () => runRecipes());
+$('back-to-upload').addEventListener('click', () => show('screen-upload'));
+$('back-to-ingredients').addEventListener('click', () => show('screen-ingredients'));
+$('rescan-btn').addEventListener('click', () => { imageBase64 = null; $('preview-img').style.display='none'; $('scan-btn').disabled=true; fileInput.value=''; show('screen-upload'); });
+
+async function callClaude(messages, systemPrompt) {
+  const body = { model: 'claude-sonnet-4-6', max_tokens: 1000, system: systemPrompt, messages };
+  const res = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || 'API error'); }
+  const data = await res.json();
+  return data.content.map(b => b.text || '').join('');
+}
+
+function parseJSON(text) {
+  const clean = text.replace(/```json\n?|```\n?/g, '').trim();
+  const start = clean.indexOf('[') !== -1 && (clean.indexOf('{') === -1 || clean.indexOf('[') < clean.indexOf('{')) ? '[' : '{';
+  const end = start === '[' ? ']' : '}';
+  const s = clean.indexOf(start);
+  const e = clean.lastIndexOf(end);
+  return JSON.parse(clean.slice(s, e + 1));
+}
+
+async function runScan() {
+  show('screen-loading');
+  $('loading-title').textContent = 'Scanning your fridge…';
+  $('loading-sub').textContent = 'Identifying ingredients with AI';
+  $('upload-error').style.display = 'none';
+
+  const prefStr = activePrefs.size ? `Dietary preferences: ${[...activePrefs].join(', ')}.` : '';
+
+  try {
+    const raw = await callClaude([{
+      role: 'user',
+      content: [
+        { type: 'image', source: { type: 'base64', media_type: imageMediaType, data: imageBase64 } },
+        { type: 'text', text: `Identify every food ingredient visible in this image. ${prefStr} Return ONLY a JSON array. Each item: {"emoji":"🍅","name":"Cherry tomatoes","quantity":"handful","days_left":4,"category":"use_soon"}. category must be one of: use_soon (expires within 3 days), moderate (3-7 days), plenty (7+ days). If shelf life is unclear, estimate based on the ingredient type. Return 5-15 ingredients. No markdown, no explanation.` }
+      ]
+    }], 'You are a food ingredient detection AI. Respond only with valid JSON arrays.');
+
+    ingredients = parseJSON(raw);
+    renderIngredients();
+    show('screen-ingredients');
+  } catch (err) {
+    show('screen-upload');
+    $('upload-error').textContent = `Scan failed: ${err.message}. Check your connection and try again.`;
+    $('upload-error').style.display = 'block';
+  }
+}
+
+function renderIngredients() {
+  const sections = [
+    { key: 'use_soon', label: 'Use soon ⚠️', cls: 'days-urgent', suffix: 'day' },
+    { key: 'moderate', label: 'A few days left', cls: 'days-ok', suffix: 'days' },
+    { key: 'plenty', label: 'Plenty of time 👍', cls: 'days-good', suffix: 'days' }
+  ];
+  const container = $('ingredient-sections');
+  container.innerHTML = '';
+
+  sections.forEach(sec => {
+    const items = ingredients.filter(i => i.category === sec.key);
+    if (!items.length) return;
+    const label = document.createElement('div');
+    label.className = 'section-label';
+    label.textContent = sec.label;
+    container.appendChild(label);
+
+    items.forEach(ing => {
+      const row = document.createElement('div');
+      row.className = 'ingredient-row';
+      row.dataset.name = ing.name;
+      const daysLabel = ing.days_left === 1 ? `${ing.days_left} day left` : `~${ing.days_left} days`;
+      row.innerHTML = `
+        <div class="ing-emoji">${ing.emoji}</div>
+        <div style="flex:1">
+          <div class="ing-name">${ing.name}${ing.quantity ? ` <span style="font-weight:400;color:var(--text-muted)">(${ing.quantity})</span>` : ''}</div>
+          <div class="ing-days ${sec.cls}">${daysLabel}</div>
+        </div>
+        <div class="ing-toggle on" aria-label="Toggle ${ing.name}"><i class="ti ti-check" aria-hidden="true" style="font-size:11px"></i></div>`;
+      row.querySelector('.ing-toggle').addEventListener('click', function() {
+        this.classList.toggle('on');
+        ing._excluded = !ing._excluded;
+      });
+      container.appendChild(row);
+    });
+  });
+}
+
+async function runRecipes() {
+  const selected = ingredients.filter(i => !i._excluded);
+  if (!selected.length) { alert('Select at least one ingredient.'); return; }
+
+  show('screen-loading');
+  $('loading-title').textContent = 'Generating recipes…';
+  $('loading-sub').textContent = 'Finding the best combinations for your ingredients';
+
+  const ingList = selected.map(i => `${i.emoji} ${i.name} (${i.days_left} days left)`).join(', ');
+  const prefStr = activePrefs.size ? `Dietary requirements: ${[...activePrefs].join(', ')}.` : '';
+
+  try {
+    const raw = await callClaude([{
+      role: 'user',
+      content: `Ingredients available: ${ingList}. ${prefStr}
+
+Return ONLY a JSON array of 3 recipes, sorted by urgency (prioritise recipes that use ingredients with fewest days left). Each recipe:
+{
+  "name": "Recipe name",
+  "emoji": "🍳",
+  "time_mins": 20,
+  "uses": ["ingredient1","ingredient2"],
+  "extras_needed": ["item if any"],
+  "urgency_note": "Short note like 'Uses spinach expiring today' or null",
+  "reason": "One-line description",
+  "ingredients_list": ["200g spinach","2 eggs","salt to taste"],
+  "steps": ["Step 1","Step 2","Step 3","Step 4"]
+}
+No markdown. No explanation. Valid JSON only.`
+    }], 'You are a creative chef AI. Respond only with valid JSON arrays. Generate practical, delicious recipes.');
+
+    const recipes = parseJSON(raw);
+    renderRecipes(recipes, selected);
+    show('screen-recipes');
+  } catch (err) {
+    show('screen-ingredients');
+    alert(`Recipe generation failed: ${err.message}`);
+  }
+}
+
+function renderRecipes(recipes, selected) {
+  const urgentItems = selected.filter(i => i.days_left <= 2).map(i => i.name);
+  const alert = $('waste-alert');
+  if (urgentItems.length) {
+    $('waste-alert-text').textContent = `${urgentItems.join(', ')} ${urgentItems.length === 1 ? 'needs' : 'need'} using very soon — recipes featuring ${urgentItems.length === 1 ? 'it' : 'them'} are shown first.`;
+    alert.style.display = 'flex';
+  } else {
+    alert.style.display = 'none';
+  }
+
+  const list = $('recipe-list');
+  list.innerHTML = '';
+
+  recipes.forEach((r, idx) => {
+    const usesCount = r.uses ? r.uses.length : 0;
+    const extrasCount = r.extras_needed ? r.extras_needed.filter(e => e).length : 0;
+
+    const card = document.createElement('div');
+    card.className = 'recipe-card';
+
+    const urgencyPill = r.urgency_note ? `<span class="pill pill-urgent">${r.urgency_note}</span>` : '';
+    const extrasPill = extrasCount ? `<span class="pill pill-extra">+${extrasCount} extra${extrasCount > 1 ? 's' : ''} needed</span>` : '';
+
+    const stepsHtml = (r.steps || []).map(s => `<li>${s}</li>`).join('');
+    const ingredientsHtml = (r.ingredients_list || r.uses || []).map(i => `<li>${i}</li>`).join('');
+    const extrasHtml = extrasCount ? `<h4>You'll also need</h4><ul>${r.extras_needed.map(e=>`<li>${e}</li>`).join('')}</ul>` : '';
+
+    card.innerHTML = `
+      <div class="recipe-header" data-idx="${idx}">
+        <div class="recipe-name">${r.emoji || '🍽️'} ${r.name}</div>
+        <div class="recipe-pills">
+          <span class="pill pill-time"><i class="ti ti-clock" aria-hidden="true" style="font-size:10px;margin-right:2px"></i>${r.time_mins} min</span>
+          <span class="pill pill-uses">Uses ${usesCount} ingredient${usesCount !== 1 ? 's' : ''}</span>
+          ${urgencyPill}${extrasPill}
+        </div>
+        <div class="recipe-reason">${r.reason}</div>
+      </div>
+      <div class="recipe-body" id="recipe-body-${idx}">
+        <h4>Ingredients</h4>
+        <ul>${ingredientsHtml}</ul>
+        ${extrasHtml}
+        <h4>Method</h4>
+        <ol>${stepsHtml}</ol>
+      </div>`;
+
+    card.querySelector('.recipe-header').addEventListener('click', () => {
+      const body = $(`recipe-body-${idx}`);
+      body.classList.toggle('open');
+    });
+
+    list.appendChild(card);
+  });
+
+  if (recipes.length > 0) {
+    $('recipe-body-0').classList.add('open');
+  }
+}
+</script>
